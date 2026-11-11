@@ -1,0 +1,435 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// This security rules file assumes the following data structures for the
+// STRATA Kanban & Team Collaboration application (strata-pat):
+//
+// Collection: workspaces
+// Document ID: {workspaceId} (e.g., "default" or project slug)
+// Fields:
+//   - board: list (required, max 20 columns) - Kanban columns and tasks array
+//   - sprint: map (optional, max 20 keys) - Active Scrum sprint metadata & burndown
+//   - restrictToPriority: bool (optional) - Whether members can only move Captain-prioritized tasks
+//   - lockPriority: bool (optional) - Alias for priority restriction toggle
+//   - projects: list (optional, max 100 items) - Workspace project gallery items
+//   - members: map or list (optional, max 200 items) - Registered workspace team members
+//   - name: string (optional, 1..200 chars) - Workspace display name
+//   - updatedBy: string (optional, max 200 chars) - Last editor identifier
+//   - createdAt: timestamp/string/number (optional, immutable) - Creation timestamp
+//   - updatedAt: timestamp/string/number (optional) - Last update timestamp
+//
+// Collection: accounts
+// Document ID: {accountId} (e.g., memberKey or email slug)
+// Fields:
+//   - name: string (required, 1..120 chars) - Full display name
+//   - email: string (required, valid email, max 200 chars, immutable) - Account email address
+//   - role: string (required, enum: ['admin', 'member', 'viewer']) - Team role
+//   - initials: string (optional, 1..10 chars) - Avatar initials
+//   - memberKey: string (optional, 1..50 chars) - Member lookup key (e.g., "rn", "fr")
+//   - provider: string (optional, max 50 chars) - Auth provider ("email", "google", "demo")
+//   - photoURL: string (optional, max 2048 chars) - Profile avatar URL
+//   - color: string (optional, max 30 chars) - Avatar badge hex color
+//   - joined: string (optional, max 50 chars) - Human-readable join date
+//   - title: string (optional, max 100 chars) - Job title
+//   - bio: string (optional, max 1000 chars) - Short profile biography
+//   - uid: string (optional, max 128 chars) - Optional Firebase Auth UID
+//   - createdAt: timestamp/string/number (optional, immutable) - Creation timestamp
+//   - updatedAt: timestamp/string/number (optional) - Last update timestamp
+//
+// Collection: tasks
+// Document ID: {taskId}
+// Fields:
+//   - title: string (required, 1..300 chars) - Task title
+//   - id: string (optional, 1..100 chars, immutable) - Task identifier
+//   - desc: string (optional, max 5000 chars) - Task description
+//   - priority: string (optional, enum: ['urgent', 'high', 'medium', 'low']) - Priority level
+//   - column: string (optional, max 50 chars) - Kanban column ID
+//   - columnId: string (optional, max 50 chars) - Alias for Kanban column ID
+//   - due: string (optional, max 100 chars) - Due date label
+//   - assignee: string or null (optional, max 100 chars) - Assigned memberKey
+//   - points: number (optional, 0..100) - Scrum story points
+//   - prioritized: bool (optional) - Prioritized by Captain flag
+//   - prioritizedByCaptain: bool (optional) - Alias for Captain priority flag
+//   - checklist: list (optional, max 100 items) - Subtask checklist items
+//   - comments: list (optional, max 500 items) - Task discussion comments
+//   - order: number (optional, 0..100000) - Sort order index
+//   - createdAt: timestamp/string/number (optional, immutable) - Creation timestamp
+//   - updatedAt: timestamp/string/number (optional) - Last update timestamp
+//
+// Collection: projects
+// Document ID: {projectId} (e.g., project slug or ID)
+// Fields:
+//   - id: string (optional, 1..128 chars, immutable) - Project identifier
+//   - name: string (required, 1..200 chars) - Project display name
+//   - description: string (optional, 0..2000 chars) - Project description
+//   - dot: string (optional, 1..30 chars) - Project indicator color
+//   - type: string (optional, enum: ['team', 'personal']) - Project type
+//   - tag: string (optional, 0..50 chars) - Project sprint/quarter tag (e.g., "Q4", "Sprint 1")
+//   - real: bool (optional) - Active live board flag
+//   - members: list or map (optional, max 200 items) - Project team members
+//   - ownerEmail: string (optional, 0..200 chars) - Owner account email for board isolation
+//   - allowedEmails: list (optional, max 200 items) - Collaborator emails with access to this project board
+//   - board: list (required, max 20 columns) - Kanban columns and tasks for this project
+//   - sprint: map (optional, max 20 keys) - Sprint state for this project
+//   - lockPriority: bool (optional) - Priority restriction toggle
+//   - restrictToPriority: bool (optional) - Alias for priority restriction toggle
+//   - createdBy: string (optional, 0..200 chars) - Creator identifier
+//   - updatedBy: string (optional, 0..200 chars) - Last editor identifier
+//   - createdAt: timestamp/string/number (optional, immutable) - Creation timestamp
+//   - updatedAt: timestamp/string/number (optional) - Last update timestamp
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if the user is authenticated via Firebase Auth
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if user owns the resource (for Firebase Auth UID-keyed docs)
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Check if user is owner based on document's uid field
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    // Verify UID hasn't been tampered with on create
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) ||
+        !isAuthenticated() ||
+        request.resource.data.uid == request.auth.uid;
+    }
+
+    // Ensure uid field is not modified on update
+    function uidNotModified() {
+      return !('uid' in request.resource.data) ||
+        !('uid' in resource.data) ||
+        request.resource.data.uid == resource.data.uid;
+    }
+
+    // Validate required fields exist
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // Validate that the document contains only the allowed fields
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // Validate that immutable fields have not been modified on update
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // Validate string length
+    function validStringLength(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() >= minLen &&
+        request.resource.data[field].size() <= maxLen;
+    }
+
+    // Validate optional string (if present, must be string and within length)
+    function isValidOptionalString(field, minLen, maxLen) {
+      return !(field in request.resource.data) ||
+        (request.resource.data[field] is string &&
+         request.resource.data[field].size() >= minLen &&
+         request.resource.data[field].size() <= maxLen);
+    }
+
+    // Validate URL format (must start with https:// or http://)
+    function isValidUrl(url) {
+      return url is string &&
+        url.size() <= 2048 &&
+        (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    // Validate email format
+    function isValidEmail(email) {
+      return email is string &&
+        email.size() >= 3 &&
+        email.size() <= 200 &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // Validate ISO 8601 date string format
+    function isValidDateString(dateStr) {
+      return dateStr is string &&
+        dateStr.size() <= 100 &&
+        dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    // Validate timestamp, ISO/human date string, or epoch number
+    function isValidTimestampOrDate(val) {
+      return val is timestamp ||
+        (val is string && val.size() <= 100) ||
+        (val is number && val >= 0);
+    }
+
+    // Validate that a list is a list and enforces size limits
+    function isValidList(list, maxSize) {
+      return list is list && list.size() <= maxSize;
+    }
+
+    // Validate that a map contains only allowed keys
+    function isValidMap(mapData, allowedKeys) {
+      return mapData is map && mapData.keys().hasOnly(allowedKeys);
+    }
+
+    // Check if the authenticated user is the owner of the project
+    // Allowed if authenticated AND:
+    // - request.auth.token.email matches resource.data.ownerEmail
+    // - OR request.auth.uid or email matches resource.data.createdBy
+    // - OR ownerEmail is absent from resource.data
+    function isProjectOwner() {
+      return isAuthenticated() && (
+        (('ownerEmail' in resource.data) &&
+          request.auth.token.email != null &&
+          request.auth.token.email == resource.data.ownerEmail) ||
+        (('createdBy' in resource.data) && (
+          request.auth.uid == resource.data.createdBy ||
+          (request.auth.token.email != null && request.auth.token.email == resource.data.createdBy)
+        )) ||
+        (!('ownerEmail' in resource.data))
+      );
+    }
+
+    // Check if authenticated user can update the project (owner or team collaborator)
+    function canUpdateProject() {
+      return isAuthenticated() && (
+        isProjectOwner() ||
+        (('allowedEmails' in resource.data) &&
+          resource.data.allowedEmails is list &&
+          request.auth.token.email != null &&
+          (request.auth.token.email in resource.data.allowedEmails)) ||
+        (('members' in resource.data) && (
+          (resource.data.members is list &&
+            request.auth.token.email != null &&
+            (request.auth.token.email in resource.data.members)) ||
+          (resource.data.members is map &&
+            request.auth.token.email != null &&
+            (request.auth.token.email in resource.data.members))
+        )) ||
+        (!('ownerEmail' in resource.data) && !('allowedEmails' in resource.data))
+      );
+    }
+
+    // ===============================================================
+    // Domain Validators (Used in BOTH create and update rules)
+    // ===============================================================
+
+    function isValidWorkspace(data) {
+      return hasOnlyAllowedFields([
+          'board',
+          'sprint',
+          'restrictToPriority',
+          'lockPriority',
+          'projects',
+          'members',
+          'name',
+          'updatedBy',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        hasRequiredFields(['board']) &&
+        isValidList(data.board, 20) &&
+        (!('sprint' in data) || (data.sprint is map && data.sprint.size() <= 20)) &&
+        (!('restrictToPriority' in data) || data.restrictToPriority is bool) &&
+        (!('lockPriority' in data) || data.lockPriority is bool) &&
+        (!('projects' in data) || isValidList(data.projects, 100)) &&
+        (!('members' in data) ||
+          (data.members is map && data.members.size() <= 200) ||
+          isValidList(data.members, 200)) &&
+        isValidOptionalString('name', 1, 200) &&
+        isValidOptionalString('updatedBy', 0, 200) &&
+        (!('createdAt' in data) || isValidTimestampOrDate(data.createdAt)) &&
+        (!('updatedAt' in data) || isValidTimestampOrDate(data.updatedAt));
+    }
+
+    function isValidAccount(data) {
+      return hasOnlyAllowedFields([
+          'name',
+          'email',
+          'initials',
+          'role',
+          'memberKey',
+          'provider',
+          'photoURL',
+          'color',
+          'joined',
+          'title',
+          'bio',
+          'uid',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        hasRequiredFields(['name', 'email', 'role']) &&
+        validStringLength('name', 1, 120) &&
+        isValidEmail(data.email) &&
+        data.role is string && data.role in ['admin', 'member', 'viewer'] &&
+        isValidOptionalString('initials', 1, 10) &&
+        isValidOptionalString('memberKey', 1, 50) &&
+        isValidOptionalString('provider', 1, 50) &&
+        isValidOptionalString('photoURL', 0, 2048) &&
+        isValidOptionalString('color', 1, 30) &&
+        isValidOptionalString('joined', 1, 50) &&
+        isValidOptionalString('title', 0, 100) &&
+        isValidOptionalString('bio', 0, 1000) &&
+        isValidOptionalString('uid', 1, 128) &&
+        (!('createdAt' in data) || isValidTimestampOrDate(data.createdAt)) &&
+        (!('updatedAt' in data) || isValidTimestampOrDate(data.updatedAt));
+    }
+
+    function isValidTask(data) {
+      return hasOnlyAllowedFields([
+          'id',
+          'title',
+          'desc',
+          'priority',
+          'column',
+          'columnId',
+          'due',
+          'assignee',
+          'points',
+          'prioritized',
+          'prioritizedByCaptain',
+          'checklist',
+          'comments',
+          'order',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        hasRequiredFields(['title']) &&
+        validStringLength('title', 1, 300) &&
+        isValidOptionalString('id', 1, 100) &&
+        isValidOptionalString('desc', 0, 5000) &&
+        (!('priority' in data) || (data.priority is string && data.priority in ['urgent', 'high', 'medium', 'low'])) &&
+        isValidOptionalString('column', 1, 50) &&
+        isValidOptionalString('columnId', 1, 50) &&
+        isValidOptionalString('due', 0, 100) &&
+        (!('assignee' in data) || data.assignee == null || (data.assignee is string && data.assignee.size() <= 100)) &&
+        (!('points' in data) || (data.points is number && data.points >= 0 && data.points <= 100)) &&
+        (!('prioritized' in data) || data.prioritized is bool) &&
+        (!('prioritizedByCaptain' in data) || data.prioritizedByCaptain is bool) &&
+        (!('checklist' in data) || isValidList(data.checklist, 100)) &&
+        (!('comments' in data) || isValidList(data.comments, 500)) &&
+        (!('order' in data) || (data.order is number && data.order >= 0 && data.order <= 100000)) &&
+        (!('createdAt' in data) || isValidTimestampOrDate(data.createdAt)) &&
+        (!('updatedAt' in data) || isValidTimestampOrDate(data.updatedAt));
+    }
+
+    function isValidProject(data) {
+      return hasOnlyAllowedFields([
+          'id',
+          'name',
+          'description',
+          'dot',
+          'type',
+          'tag',
+          'real',
+          'members',
+          'ownerEmail',
+          'allowedEmails',
+          'board',
+          'sprint',
+          'lockPriority',
+          'restrictToPriority',
+          'createdBy',
+          'updatedBy',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        hasRequiredFields(['name', 'board']) &&
+        validStringLength('name', 1, 200) &&
+        isValidList(data.board, 20) &&
+        isValidOptionalString('id', 1, 128) &&
+        isValidOptionalString('description', 0, 2000) &&
+        isValidOptionalString('dot', 1, 30) &&
+        (!('type' in data) || (data.type is string && data.type in ['team', 'personal'])) &&
+        isValidOptionalString('tag', 0, 50) &&
+        (!('real' in data) || data.real is bool) &&
+        (!('members' in data) ||
+          (data.members is map && data.members.size() <= 200) ||
+          isValidList(data.members, 200)) &&
+        isValidOptionalString('ownerEmail', 0, 200) &&
+        (!('allowedEmails' in data) || isValidList(data.allowedEmails, 200)) &&
+        (!('sprint' in data) || (data.sprint is map && data.sprint.size() <= 20)) &&
+        (!('lockPriority' in data) || data.lockPriority is bool) &&
+        (!('restrictToPriority' in data) || data.restrictToPriority is bool) &&
+        isValidOptionalString('createdBy', 0, 200) &&
+        isValidOptionalString('updatedBy', 0, 200) &&
+        (!('createdAt' in data) || isValidTimestampOrDate(data.createdAt)) &&
+        (!('updatedAt' in data) || isValidTimestampOrDate(data.updatedAt));
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // Workspaces collection: stores Kanban board columns/tasks, Sprint state, and project metadata.
+    // Open read/write with strict schema and size validation to support STRATA demo/session sync.
+    match /workspaces/{workspaceId} {
+      allow read: if true;
+      allow create: if workspaceId.size() <= 128 &&
+        isValidWorkspace(request.resource.data);
+      allow update: if workspaceId.size() <= 128 &&
+        isValidWorkspace(request.resource.data) &&
+        areImmutableFieldsUnchanged(['createdAt']);
+      allow delete: if false;
+    }
+
+    // Accounts collection: stores STRATA team accounts (demo seed accounts & newly registered members).
+    match /accounts/{accountId} {
+      allow read: if true;
+      allow create: if accountId.size() <= 128 &&
+        isValidAccount(request.resource.data) &&
+        uidUnchanged();
+      allow update: if accountId.size() <= 128 &&
+        isValidAccount(request.resource.data) &&
+        areImmutableFieldsUnchanged(['createdAt', 'email']) &&
+        uidNotModified();
+      allow delete: if false;
+    }
+
+    // Tasks collection: optional standalone task documents.
+    match /tasks/{taskId} {
+      allow read: if true;
+      allow create: if taskId.size() <= 128 &&
+        isValidTask(request.resource.data);
+      allow update: if taskId.size() <= 128 &&
+        isValidTask(request.resource.data) &&
+        areImmutableFieldsUnchanged(['createdAt', 'id']);
+      allow delete: if taskId.size() <= 128;
+    }
+
+    // Projects collection: stores individual Kanban boards and Sprint state per project.
+    match /projects/{projectId} {
+      allow read: if true;
+      allow create: if projectId.size() <= 128 &&
+        isValidProject(request.resource.data);
+      allow update: if projectId.size() <= 128 &&
+        canUpdateProject() &&
+        isValidProject(request.resource.data) &&
+        areImmutableFieldsUnchanged(['createdAt', 'id']);
+      allow delete: if projectId.size() <= 128 &&
+        isProjectOwner();
+    }
+
+    // Default deny for all other collections and paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

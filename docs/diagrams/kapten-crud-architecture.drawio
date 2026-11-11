@@ -1,0 +1,94 @@
+<mxfile host="app.diagrams.net" modified="2026-10-22T08:45:00.000Z" agent="Mozilla/5.0" version="24.0.0">
+  <diagram id="kapten-report-grid" name="Hak CRUD Kapten (Format Laporan)">
+    <mxGraphModel dx="1000" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="950" pageHeight="820" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- NODE UTAMA: KAPTEN (HEADER PUSAT) -->
+        <mxCell id="root_captain" value="&lt;div style=&quot;font-size: 14px; font-weight: 800; letter-spacing: 0.5px;&quot;&gt;KAPTEN (PROJECT OWNER / ADMIN)&lt;/div&gt;&lt;div style=&quot;font-size: 11px; opacity: 0.9; margin-top: 2px;&quot;&gt;Otoritas Tertinggi &amp;amp; Tata Kelola Penuh Proyek STRATA&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fillColor=#065F46;strokeColor=#047857;strokeWidth=2;fontColor=#FFFFFF;align=center;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="275" y="25" width="400" height="58" as="geometry" />
+        </mxCell>
+
+        <!-- BARIS 1 - KIRI: MANAJEMEN PROYEK -->
+        <mxCell id="card_proj" value="&lt;div style=&quot;font-size: 13px; font-weight: 800; color: #065F46; border-bottom: 1.5px solid #E2E8F0; padding-bottom: 5px; margin-bottom: 8px;&quot;&gt;1. MANAJEMEN PROYEK&lt;/div&gt;&lt;div style=&quot;font-size: 11px; line-height: 1.6; color: #1E293B; text-align: left;&quot;&gt;• &lt;b style=&quot;color: #059669;&quot;&gt;[CREATE]&lt;/b&gt; Buat papan baru (Pribadi / Tim)&lt;br&gt;• &lt;b style=&quot;color: #2563EB;&quot;&gt;[READ]&lt;/b&gt; Akses penuh data, analitik &amp;amp; kanvas&lt;br&gt;• &lt;b style=&quot;color: #D97706;&quot;&gt;[UPDATE]&lt;/b&gt; Ubah nama &amp;amp; konfigurasi proyek&lt;br&gt;• &lt;b style=&quot;color: #DC2626;&quot;&gt;[DELETE]&lt;/b&gt; Hapus proyek permanen &lt;b style=&quot;color: #DC2626;&quot;&gt;(Eksklusif)&lt;/b&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#F0FDF4;strokeColor=#86EFAC;strokeWidth=1.5;align=left;verticalAlign=top;spacing=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="130" width="380" height="175" as="geometry" />
+        </mxCell>
+
+        <!-- BARIS 1 - KANAN: TIM & KOLABORATOR -->
+        <mxCell id="card_collab" value="&lt;div style=&quot;font-size: 13px; font-weight: 800; color: #1E40AF; border-bottom: 1.5px solid #E2E8F0; padding-bottom: 5px; margin-bottom: 8px;&quot;&gt;2. TIM &amp;amp; KOLABORATOR&lt;/div&gt;&lt;div style=&quot;font-size: 11px; line-height: 1.6; color: #1E293B; text-align: left;&quot;&gt;• &lt;b style=&quot;color: #059669;&quot;&gt;[CREATE]&lt;/b&gt; Undang anggota via email &lt;b style=&quot;color: #1E40AF;&quot;&gt;(Eksklusif)&lt;/b&gt;&lt;br&gt;• &lt;b style=&quot;color: #D97706;&quot;&gt;[UPDATE]&lt;/b&gt; Tentukan peran: &lt;b&gt;Member&lt;/b&gt; / &lt;b&gt;Viewer&lt;/b&gt;&lt;br&gt;• &lt;b style=&quot;color: #DC2626;&quot;&gt;[DELETE]&lt;/b&gt; Keluarkan / kick kolaborator dari tim&lt;br&gt;• &lt;b style=&quot;color: #475569;&quot;&gt;[GUARD]&lt;/b&gt; Akses undang terkunci bagi anggota lain&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#EFF6FF;strokeColor=#93C5FD;strokeWidth=1.5;align=left;verticalAlign=top;spacing=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="510" y="130" width="380" height="175" as="geometry" />
+        </mxCell>
+
+        <!-- BARIS 2 - KIRI: KOLOM KANBAN & WIP -->
+        <mxCell id="card_col" value="&lt;div style=&quot;font-size: 13px; font-weight: 800; color: #86198F; border-bottom: 1.5px solid #E2E8F0; padding-bottom: 5px; margin-bottom: 8px;&quot;&gt;3. KOLOM KANBAN &amp;amp; WIP LIMIT&lt;/div&gt;&lt;div style=&quot;font-size: 11px; line-height: 1.6; color: #1E293B; text-align: left;&quot;&gt;• &lt;b style=&quot;color: #059669;&quot;&gt;[CREATE]&lt;/b&gt; Tambah kolom baru ke papan Kanban&lt;br&gt;• &lt;b style=&quot;color: #D97706;&quot;&gt;[UPDATE]&lt;/b&gt; Atur batas kapasitas kerja (WIP Limit)&lt;br&gt;• &lt;b style=&quot;color: #D97706;&quot;&gt;[UPDATE]&lt;/b&gt; Ubah nama, palet warna, &amp;amp; urutan kolom&lt;br&gt;• &lt;b style=&quot;color: #DC2626;&quot;&gt;[DELETE]&lt;/b&gt; Hapus kolom beserta tugas di dalamnya&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FAF5FF;strokeColor=#D8B4FE;strokeWidth=1.5;align=left;verticalAlign=top;spacing=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="340" width="380" height="175" as="geometry" />
+        </mxCell>
+
+        <!-- BARIS 2 - KANAN: SPRINT & SCRUM -->
+        <mxCell id="card_sprint" value="&lt;div style=&quot;font-size: 13px; font-weight: 800; color: #854D0E; border-bottom: 1.5px solid #E2E8F0; padding-bottom: 5px; margin-bottom: 8px;&quot;&gt;4. SPRINT &amp;amp; KUNCI PRIORITAS&lt;/div&gt;&lt;div style=&quot;font-size: 11px; line-height: 1.6; color: #1E293B; text-align: left;&quot;&gt;• &lt;b style=&quot;color: #059669;&quot;&gt;[CREATE]&lt;/b&gt; Mulai Sprint baru (&lt;code&gt;onStartSprint&lt;/code&gt;)&lt;br&gt;• &lt;b style=&quot;color: #D97706;&quot;&gt;[UPDATE]&lt;/b&gt; Tulis &amp;amp; ubah target utama Sprint Goal&lt;br&gt;• &lt;b style=&quot;color: #D97706;&quot;&gt;[UPDATE]&lt;/b&gt; Sakelar Lock Priority (Kunci fokus tim)&lt;br&gt;• &lt;b style=&quot;color: #DC2626;&quot;&gt;[DELETE]&lt;/b&gt; Selesaikan &amp;amp; arsipkan riwayat Sprint&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FEFCE8;strokeColor=#FDE047;strokeWidth=1.5;align=left;verticalAlign=top;spacing=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="510" y="340" width="380" height="175" as="geometry" />
+        </mxCell>
+
+        <!-- BARIS 3 - TENGAH: KARTU TUGAS & PRIORITAS -->
+        <mxCell id="card_task" value="&lt;div style=&quot;font-size: 13px; font-weight: 800; color: #0F766E; border-bottom: 1.5px solid #E2E8F0; padding-bottom: 5px; margin-bottom: 8px;&quot;&gt;5. KARTU TUGAS &amp;amp; EKSEKUSI PRIORITAS&lt;/div&gt;&lt;div style=&quot;font-size: 11px; line-height: 1.6; color: #1E293B; text-align: left;&quot;&gt;• &lt;b style=&quot;color: #059669;&quot;&gt;[CRUD LENGKAP]&lt;/b&gt; Buat, edit deskripsi, checklist subtask, bobot points, dan hapus kartu secara bebas&lt;br&gt;• &lt;b style=&quot;color: #2563EB;&quot;&gt;[BINTANG PRIORITAS]&lt;/b&gt; Memberi/mencabut bintang prioritas (&lt;code&gt;togglePriority&lt;/code&gt;) &lt;b style=&quot;color: #0F766E;&quot;&gt;(Eksklusif Kapten)&lt;/b&gt;&lt;br&gt;• &lt;b style=&quot;color: #059669;&quot;&gt;[BEBAS DRAG &amp;amp; DROP]&lt;/b&gt; Kapten tidak pernah terkunci oleh aturan sprint saat memindahkan kartu tugas&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#F0FDFA;strokeColor=#99F6E4;strokeWidth=1.5;align=left;verticalAlign=top;spacing=12;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="235" y="550" width="480" height="165" as="geometry" />
+        </mxCell>
+
+        <!-- CONNECTORS DARI KAPTEN KE MASING-MASING KARTU -->
+        <!-- KE KARTU 1 (PROYEK) -->
+        <mxCell id="edge1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#059669;strokeWidth=1.8;html=1;" edge="1" parent="1" source="root_captain" target="card_proj">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="475" y="105" />
+              <mxPoint x="250" y="105" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- KE KARTU 2 (KOLABORATOR) -->
+        <mxCell id="edge2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#2563EB;strokeWidth=1.8;html=1;" edge="1" parent="1" source="root_captain" target="card_collab">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="475" y="105" />
+              <mxPoint x="700" y="105" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- KE KARTU 3 (KOLOM) -->
+        <mxCell id="edge3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#86198F;strokeWidth=1.8;html=1;" edge="1" parent="1" source="root_captain" target="card_col">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="475" y="105" />
+              <mxPoint x="35" y="105" />
+              <mxPoint x="35" y="427" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- KE KARTU 4 (SPRINT) -->
+        <mxCell id="edge4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#D97706;strokeWidth=1.8;html=1;" edge="1" parent="1" source="root_captain" target="card_sprint">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="475" y="105" />
+              <mxPoint x="915" y="105" />
+              <mxPoint x="915" y="427" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- KE KARTU 5 (TUGAS) -->
+        <mxCell id="edge5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0F766E;strokeWidth=1.8;html=1;" edge="1" parent="1" source="root_captain" target="card_task">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="475" y="530" />
+              <mxPoint x="475" y="530" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

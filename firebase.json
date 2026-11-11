@@ -1,0 +1,23 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json",
+    "database": "(default)",
+    "location": "asia-southeast2"
+  },
+  "auth": {
+    "providers": {
+      "anonymous": true,
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "STRATA",
+        "supportEmail": "nauvalpurnama07@gmail.com",
+        "authorizedRedirectUris": [
+          "https://strata-pat.firebaseapp.com/__/auth/handler",
+          "http://localhost:5173",
+          "http://127.0.0.1:5173"
+        ]
+      }
+    }
+  }
+}
