@@ -24,7 +24,6 @@ import {
   checklistPct,
 } from "../data/board";
 import SprintBar from "../components/scrum/SprintBar";
-import WorkflowGuide from "../components/scrum/WorkflowGuide";
 import ViewerBoard from "../components/scrum/ViewerBoard";
 import WhiteboardCanvas from "../components/presentation/WhiteboardCanvas";
 import AIHelper from "../components/ai/AIHelper";
@@ -747,6 +746,7 @@ function TaskCard({
   const isLight = theme === "light";
   const commentsList = Array.isArray(task.comments) ? task.comments : [];
   const hasComments = commentsList.length > 0;
+  const isUrgent = task.priority === "urgent";
 
   const [isHovered, setIsHovered] = useState(false);
   const [isSeen, setIsSeen] = useState(() => {
@@ -853,24 +853,20 @@ function TaskCard({
         </span>
       </div>
 
-      {/* POP-UP INTERAKTIF SAAT HOVER UNTUK KARTU YANG BELUM DILIHAT */}
-      {!isSeen && isHovered && (
+      {/* POP-UP INTERAKTIF SAAT HOVER KHUSUS KARTU MENDESAK / KOMENTAR YANG BELUM DILIHAT */}
+      {(isUrgent || hasComments) && !isSeen && isHovered && (
         <div
           data-no-drag
           onClick={markAsSeen}
           className={
             "absolute -top-11 left-1.5 right-1.5 z-40 px-3 py-1.5 rounded-xl border flex items-center justify-between gap-2 shadow-2xl backdrop-blur-2xl transition-all duration-200 cursor-pointer " +
-            (task.priority === "urgent"
+            (isUrgent
               ? isLight
                 ? "bg-rose-50/95 border-rose-300 text-rose-950 shadow-rose-500/20"
                 : "bg-zinc-950/95 border-rose-500/60 text-rose-200 shadow-rose-950/60"
-              : hasComments
-              ? isLight
-                ? "bg-sky-50/95 border-sky-300 text-sky-950 shadow-sky-500/20"
-                : "bg-zinc-950/95 border-sky-500/60 text-sky-200 shadow-sky-950/60"
               : isLight
-              ? "bg-white/95 border-zinc-300 text-zinc-900 shadow-black/10"
-              : "bg-zinc-900/95 border-zinc-700/80 text-zinc-100 shadow-black/70")
+              ? "bg-sky-50/95 border-sky-300 text-sky-950 shadow-sky-500/20"
+              : "bg-zinc-950/95 border-sky-500/60 text-sky-200 shadow-sky-950/60")
           }
         >
           <div className="flex items-center gap-2 min-w-0">
@@ -878,34 +874,22 @@ function TaskCard({
               <span
                 className={
                   "animate-ping absolute inline-flex h-full w-full rounded-full opacity-80 " +
-                  (task.priority === "urgent"
-                    ? "bg-rose-400"
-                    : hasComments
-                    ? "bg-sky-400"
-                    : "bg-emerald-400")
+                  (isUrgent ? "bg-rose-400" : "bg-sky-400")
                 }
               />
               <span
                 className={
                   "relative inline-flex rounded-full h-2 w-2 " +
-                  (task.priority === "urgent"
-                    ? "bg-rose-500 shadow-[0_0_8px_#f43f5e]"
-                    : hasComments
-                    ? "bg-sky-500 shadow-[0_0_8px_#38bdf8]"
-                    : "bg-emerald-500 shadow-[0_0_8px_#10b981]")
+                  (isUrgent ? "bg-rose-500 shadow-[0_0_8px_#f43f5e]" : "bg-sky-500 shadow-[0_0_8px_#38bdf8]")
                 }
               />
             </span>
             <div className="min-w-0">
               <div className="text-[11.5px] font-extrabold truncate leading-tight">
-                {task.priority === "urgent"
-                  ? "Tugas Mendesak!"
-                  : hasComments
-                  ? `${commentsList.length} Komentar Diskusi Baru`
-                  : "Kartu Belum Dilihat"}
+                {isUrgent ? "Perhatian: Tugas Mendesak!" : `${commentsList.length} Komentar Diskusi Baru`}
               </div>
               <div className={"text-[10px] font-medium truncate leading-tight mt-0.5 " + (isLight ? "text-zinc-600" : "text-zinc-400")}>
-                Klik untuk tandai sudah dilihat
+                Klik kartu untuk tandai sudah dilihat
               </div>
             </div>
           </div>
@@ -7989,21 +7973,6 @@ export default function DashboardPage({ user, onLogout }) {
                     onStartSprint={startSprint}
                     onEndSprint={endSprint}
                     onOpenSettings={() => setView("settings")}
-                  />
-
-                  <WorkflowGuide
-                    board={board}
-                    sprint={sprint}
-                    role={role}
-                    lockPriority={lockPriority}
-                    theme={theme}
-                    onOpenAIHelper={() => {
-                      window.dispatchEvent(new CustomEvent("strata:open-ai"));
-                    }}
-                    onScrollToColumn={(colId) => {
-                      const el = document.querySelector(`[data-colid="${colId}"]`) || document.getElementById("column-" + colId);
-                      if (el) el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-                    }}
                   />
 
                   <div className="flex flex-wrap items-center justify-between gap-3.5 mb-5">
