@@ -799,7 +799,7 @@ function TaskCard({
         }
       }}
       className={
-        "group relative rounded-2xl p-3.5 pl-4.5 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col gap-2.5 overflow-visible " +
+        "group relative rounded-2xl p-3.5 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col gap-2.5 overflow-visible " +
         colTheme.cardAccent + " " +
         (isGhostSource
           ? colTheme.cardGhost
@@ -816,38 +816,29 @@ function TaskCard({
           : "inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.35), 0 12px 28px -6px rgba(0,0,0,0.55)",
       }}
     >
-      {/* LAPISAN KILAU KACA & SHEEN BERKILAU DI SELURUH KARTU */}
+      {/* INDIKATOR STATUS DOT DI LUAR SISI KIRI KARTU */}
       <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-white/[0.09] via-white/[0.02] to-transparent overflow-hidden z-[1]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -inset-full bg-gradient-to-r from-transparent via-white/[0.1] to-transparent -rotate-45 translate-x-[-130%] group-hover:translate-x-[130%] transition-transform duration-1000 ease-out overflow-hidden z-[1]"
-      />
-
-      {/* INDIKATOR STATUS DOT DI PINGGIR KIRI KARTU */}
-      <div
-        className="absolute left-1.5 top-3.5 flex items-center justify-center pointer-events-none z-10"
-        title={`Status: ${PRIORITY_LABEL[task.priority]}`}
+        className="absolute -left-3 top-3.5 flex items-center justify-center pointer-events-none z-20"
+        title={`Status: ${PRIORITY_LABEL[task.priority] || "Normal"}${!isSeen ? " • Belum dibuka" : ""}`}
       >
-        <span className="relative flex h-2 w-2">
+        <span className="relative flex h-2.5 w-2.5 items-center justify-center">
           {task.priority === "urgent" && (
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-80" />
           )}
-          {!isSeen && (
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+          {!isSeen && task.priority !== "urgent" && (
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70" />
           )}
           <span
             className={
-              "relative inline-flex rounded-full h-2 w-2 " +
+              "relative inline-flex rounded-full h-2 w-2 ring-2 shadow-md transition-transform duration-200 group-hover:scale-125 " +
+              (isLight ? "ring-white " : "ring-zinc-950 ") +
               (task.priority === "urgent"
                 ? "bg-rose-500 shadow-[0_0_8px_#f43f5e]"
                 : task.priority === "high"
-                ? "bg-amber-400 shadow-[0_0_6px_#f59e0b]"
+                ? "bg-amber-400 shadow-[0_0_8px_#f59e0b]"
                 : task.priority === "medium"
-                ? "bg-sky-400 shadow-[0_0_6px_#38bdf8]"
-                : "bg-zinc-500")
+                ? "bg-sky-400 shadow-[0_0_8px_#38bdf8]"
+                : "bg-emerald-500 shadow-[0_0_6px_#10b981]")
             }
           />
         </span>
