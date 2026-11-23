@@ -544,9 +544,42 @@ function TaskCardBody({ task, theme = "dark", colId, onDelete }) {
   return (
     <>
       <div className="flex items-start justify-between gap-2">
-        <span className={"inline-flex text-[10px] font-bold px-2 py-0.5 rounded-md " + priorityClass}>
-          {PRIORITY_LABEL[task.priority]}
+        {/* BADGE PRIORITAS BERSTANDAR TASTE-SKILL TINGGI */}
+        <span
+          className={
+            "inline-flex items-center gap-1.5 text-[9.5px] font-mono uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-md transition-all duration-200 " +
+            (task.priority === "urgent"
+              ? isLight
+                ? "bg-rose-50 text-rose-800 border border-rose-300 shadow-xs"
+                : "bg-gradient-to-r from-rose-500/25 to-red-500/15 text-rose-300 border border-rose-500/40 shadow-[0_0_12px_rgba(244,63,94,0.35)]"
+              : task.priority === "high"
+              ? isLight
+                ? "bg-amber-50 text-amber-800 border border-amber-300 shadow-xs"
+                : "bg-amber-500/15 text-amber-300 border border-amber-500/35 shadow-[0_0_10px_rgba(245,158,11,0.2)]"
+              : task.priority === "medium"
+              ? isLight
+                ? "bg-slate-100 text-slate-700 border border-slate-300"
+                : "bg-zinc-800/90 text-cyan-300 border border-cyan-500/30"
+              : isLight
+              ? "bg-slate-50 text-slate-600 border border-slate-200"
+              : "bg-zinc-800/60 text-zinc-400 border border-zinc-700/60")
+          }
+        >
+          {task.priority === "urgent" ? (
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-80" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500" />
+            </span>
+          ) : task.priority === "high" ? (
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+          ) : task.priority === "medium" ? (
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/80" />
+          ) : (
+            <span className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
+          )}
+          <span>{PRIORITY_LABEL[task.priority]}</span>
         </span>
+
         <div className="flex items-center gap-1.5 ml-auto">
           {task.points != null && (
             <span className={"text-[10px] font-mono tabular-nums border rounded-md px-1.5 py-0.5 flex-shrink-0 " + (isLight ? "text-zinc-600 border-slate-200/80 bg-slate-50" : "text-zinc-400 border-zinc-700/70 bg-zinc-900/50")}>
@@ -598,15 +631,22 @@ function TaskCardBody({ task, theme = "dark", colId, onDelete }) {
         {task.title}
       </div>
 
+      {/* BADGE KOMENTAR INTERAKTIF & BERKILAU */}
       {commentCount > 0 && (
-        <div className={"flex items-center gap-1.5 text-[10.5px] font-bold px-2 py-1 rounded-md w-fit " +
-          (isLight ? "bg-blue-50 text-blue-800 border border-blue-200" : "bg-blue-950/70 text-blue-300 border border-blue-800/80")}>
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>
+        <div
+          className={
+            "flex items-center gap-2 text-[11px] font-semibold px-2.5 py-1 rounded-lg w-fit transition-all duration-200 border shadow-xs " +
+            (isLight
+              ? "bg-gradient-to-r from-sky-50 to-blue-50/80 text-sky-900 border-sky-300 hover:border-sky-400"
+              : "bg-gradient-to-r from-sky-950/80 via-blue-950/70 to-indigo-950/60 text-sky-200 border-sky-400/40 shadow-[0_0_16px_-2px_rgba(56,189,248,0.35)] hover:border-sky-300 hover:shadow-[0_0_20px_rgba(56,189,248,0.5)]")
+          }
+        >
+          <span className="relative flex h-2 w-2 flex-shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-80" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-400 shadow-[0_0_8px_#38bdf8]" />
           </span>
-          <Icon.ChatBubble width={11} height={11} className={isLight ? "text-blue-600" : "text-blue-400"} />
-          <span>{commentCount} komentar</span>
+          <Icon.ChatBubble width={12} height={12} className={isLight ? "text-sky-600" : "text-sky-300"} />
+          <span>{commentCount} Komentar Diskusi</span>
         </div>
       )}
 
@@ -650,7 +690,10 @@ function TaskCardBody({ task, theme = "dark", colId, onDelete }) {
               (isLight ? "bg-slate-100 border-slate-200 text-zinc-600" : "bg-zinc-800/80 border-zinc-700/60 text-zinc-300")}
             title={`Total waktu pengerjaan: ${Math.floor(task.timeSpent / 60)} menit (${task.timeSpent} detik)`}
           >
-            <span>⏱</span>
+            <svg width="10" height="10" viewBox="0 0 14 14" fill="none" className="flex-shrink-0">
+              <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M7 3.8V7.2L9.2 8.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
             <span>{Math.floor(task.timeSpent / 60) > 0 ? `${Math.floor(task.timeSpent / 60)}m` : `${task.timeSpent}s`}</span>
           </span>
         )}
@@ -705,9 +748,42 @@ function TaskCard({
   const commentsList = Array.isArray(task.comments) ? task.comments : [];
   const hasComments = commentsList.length > 0;
 
+  const [isHovered, setIsHovered] = useState(false);
+  const [isSeen, setIsSeen] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("strata-seen-cards") || "[]");
+      return Array.isArray(stored) && stored.includes(task.id);
+    } catch {
+      return false;
+    }
+  });
+
+  const markAsSeen = (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    setIsSeen(true);
+    try {
+      const stored = JSON.parse(localStorage.getItem("strata-seen-cards") || "[]");
+      if (!stored.includes(task.id)) {
+        stored.push(task.id);
+        localStorage.setItem("strata-seen-cards", JSON.stringify(stored));
+      }
+    } catch {}
+  };
+
+  const handleCardClick = () => {
+    markAsSeen();
+    if (bulkMode) {
+      onToggleSelect(task.id);
+    } else {
+      onOpen(task.id);
+    }
+  };
+
   return (
     <div
       data-taskid={task.id}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       onPointerDown={(e) => {
         if (e.target.closest("[data-no-drag]")) return;
         if (bulkMode) {
@@ -719,28 +795,138 @@ function TaskCard({
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === "Enter") {
-          if (bulkMode) onToggleSelect(task.id);
-          else onOpen(task.id);
+          handleCardClick();
         }
       }}
       className={
-        "group relative rounded-2xl p-3.5 transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col gap-2.5 " +
+        "group relative rounded-2xl p-3.5 pl-4.5 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col gap-2.5 overflow-visible " +
         colTheme.cardAccent + " " +
         (isGhostSource
           ? colTheme.cardGhost
           : (locked
               ? (isLight ? "bg-slate-100/70 border border-slate-200/80 opacity-70 " : "bg-zinc-900/40 border border-zinc-800/80 opacity-65 ")
-              : colTheme.cardBg + " " + colTheme.cardHover + " hover:-translate-y-0.5 hover:shadow-xl ") +
+              : colTheme.cardBg + " " + colTheme.cardHover + " hover:-translate-y-1 hover:shadow-2xl ") +
             (draggable ? "cursor-grab active:cursor-grabbing " : locked ? "cursor-not-allowed " : "cursor-pointer ") +
-            (hasComments ? (isLight ? "ring-1 ring-blue-400/60 " : "ring-1 ring-blue-500/50 ") : "") +
+            (hasComments ? (isLight ? "ring-1 ring-sky-400/60 " : "ring-1 ring-sky-500/50 ") : "") +
             (isSelected ? "ring-2 ring-emerald-500 shadow-md shadow-emerald-500/15 " : ""))
       }
       style={{
         boxShadow: isLight
-          ? "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px -2px rgba(0,0,0,0.05)"
-          : "inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 16px -4px rgba(0,0,0,0.4)",
+          ? "inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(0,0,0,0.03), 0 4px 18px -3px rgba(0,0,0,0.06)"
+          : "inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.35), 0 12px 28px -6px rgba(0,0,0,0.55)",
       }}
     >
+      {/* LAPISAN KILAU KACA & SHEEN BERKILAU DI SELURUH KARTU */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-white/[0.09] via-white/[0.02] to-transparent overflow-hidden z-[1]"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -inset-full bg-gradient-to-r from-transparent via-white/[0.1] to-transparent -rotate-45 translate-x-[-130%] group-hover:translate-x-[130%] transition-transform duration-1000 ease-out overflow-hidden z-[1]"
+      />
+
+      {/* INDIKATOR STATUS DOT DI PINGGIR KIRI KARTU */}
+      <div
+        className="absolute left-1.5 top-3.5 flex items-center justify-center pointer-events-none z-10"
+        title={`Status: ${PRIORITY_LABEL[task.priority]}`}
+      >
+        <span className="relative flex h-2 w-2">
+          {task.priority === "urgent" && (
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-80" />
+          )}
+          {!isSeen && (
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+          )}
+          <span
+            className={
+              "relative inline-flex rounded-full h-2 w-2 " +
+              (task.priority === "urgent"
+                ? "bg-rose-500 shadow-[0_0_8px_#f43f5e]"
+                : task.priority === "high"
+                ? "bg-amber-400 shadow-[0_0_6px_#f59e0b]"
+                : task.priority === "medium"
+                ? "bg-sky-400 shadow-[0_0_6px_#38bdf8]"
+                : "bg-zinc-500")
+            }
+          />
+        </span>
+      </div>
+
+      {/* POP-UP INTERAKTIF SAAT HOVER UNTUK KARTU YANG BELUM DILIHAT */}
+      {!isSeen && isHovered && (
+        <div
+          data-no-drag
+          onClick={markAsSeen}
+          className={
+            "absolute -top-11 left-1.5 right-1.5 z-40 px-3 py-1.5 rounded-xl border flex items-center justify-between gap-2 shadow-2xl backdrop-blur-2xl transition-all duration-200 cursor-pointer " +
+            (task.priority === "urgent"
+              ? isLight
+                ? "bg-rose-50/95 border-rose-300 text-rose-950 shadow-rose-500/20"
+                : "bg-zinc-950/95 border-rose-500/60 text-rose-200 shadow-rose-950/60"
+              : hasComments
+              ? isLight
+                ? "bg-sky-50/95 border-sky-300 text-sky-950 shadow-sky-500/20"
+                : "bg-zinc-950/95 border-sky-500/60 text-sky-200 shadow-sky-950/60"
+              : isLight
+              ? "bg-white/95 border-zinc-300 text-zinc-900 shadow-black/10"
+              : "bg-zinc-900/95 border-zinc-700/80 text-zinc-100 shadow-black/70")
+          }
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="relative flex h-2 w-2 flex-shrink-0">
+              <span
+                className={
+                  "animate-ping absolute inline-flex h-full w-full rounded-full opacity-80 " +
+                  (task.priority === "urgent"
+                    ? "bg-rose-400"
+                    : hasComments
+                    ? "bg-sky-400"
+                    : "bg-emerald-400")
+                }
+              />
+              <span
+                className={
+                  "relative inline-flex rounded-full h-2 w-2 " +
+                  (task.priority === "urgent"
+                    ? "bg-rose-500 shadow-[0_0_8px_#f43f5e]"
+                    : hasComments
+                    ? "bg-sky-500 shadow-[0_0_8px_#38bdf8]"
+                    : "bg-emerald-500 shadow-[0_0_8px_#10b981]")
+                }
+              />
+            </span>
+            <div className="min-w-0">
+              <div className="text-[11.5px] font-extrabold truncate leading-tight">
+                {task.priority === "urgent"
+                  ? "Tugas Mendesak!"
+                  : hasComments
+                  ? `${commentsList.length} Komentar Diskusi Baru`
+                  : "Kartu Belum Dilihat"}
+              </div>
+              <div className={"text-[10px] font-medium truncate leading-tight mt-0.5 " + (isLight ? "text-zinc-600" : "text-zinc-400")}>
+                Klik untuk tandai sudah dilihat
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            data-no-drag
+            onClick={(e) => {
+              e.stopPropagation();
+              markAsSeen();
+            }}
+            className={
+              "px-2 py-0.5 rounded-md text-[9.5px] font-mono font-bold uppercase tracking-wider border flex-shrink-0 transition-colors " +
+              (isLight
+                ? "bg-zinc-100 hover:bg-zinc-200 border-zinc-300 text-zinc-800"
+                : "bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-200")
+            }
+          >
+            Tutup
+          </button>
+        </div>
+      )}
       {dropIndicator === "before" && (
         <div
           aria-hidden="true"
