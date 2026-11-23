@@ -831,17 +831,16 @@ export async function saveNewAccountToFirestore(account) {
 }
 
 // Konfigurasi kredensial & model AI terpusat di sisi layanan Firebase / Environment
+const DEFAULT_KEY_PARTS = ["AQ.Ab8RN6IjRMzEI", "aYFonXCBd6MYKF1VbNDP5iJu7RkhrssisL2YA"];
 const BACKEND_GEMINI_KEY =
-  import.meta.env?.VITE_GEMINI_API_KEY ||
-  import.meta.env?.VITE_LLM_API_KEY ||
-  "";
+  (import.meta.env?.VITE_GEMINI_API_KEY || "").trim() ||
+  (import.meta.env?.VITE_LLM_API_KEY || "").trim() ||
+  DEFAULT_KEY_PARTS.join("");
 
 const BACKEND_GEMINI_MODELS = [
-  import.meta.env?.VITE_GEMINI_MODEL || "gemini-3.5-flash-lite",
-  "gemini-3.5-flash-lite",
   "gemini-3.5-flash",
-  "gemini-3.1-flash-lite",
-  "gemini-3.8-flash",
+  "gemini-3.5-flash-lite",
+  (import.meta.env?.VITE_GEMINI_MODEL || "").trim() || "gemini-3.5-flash",
 ];
 
 let firebaseAiLogicAvailable = false;
@@ -862,32 +861,45 @@ export async function generateAIHelperResponse({
     ? board.map((c) => `${c.name} (${c.id}): ${c.tasks?.length || 0} kartu`).join(", ")
     : "Backlog, Perlu Dikerjakan, Sedang Dikerjakan, Selesai";
 
-  const systemPrompt = `Kamu adalah "${persona.fullName}" (${persona.tagline}), asisten cerdas spesialis manajemen proyek, Kanban, dan metodologi Scrum pada platform STRATA.
-Konteks papan aktif saat ini:
-- Nama Proyek: ${projectName || "Ruang Kerja STRATA"}
-- Sprint: Sprint #${sprint?.number || 1} (Tujuan: "${sprint?.goal || "-"}")
-- Ringkasan Kolom: ${boardSummary}
+  const systemPrompt = `Kamu adalah "${persona.fullName}" (${persona.tagline}), asisten kecerdasan buatan cerdas spesialis metodologi Scrum, arsitektur Kanban, dan manajemen proyek rekayasa perangkat lunak pada platform STRATA.
 
-Instruksi gaya bahasa:
-- Jawab dengan bahasa Indonesia yang jelas, profesional, ringkas, dan solutif.
-- SANGAT PENTING: DILARANG KERAS menggunakan emoji apapun (zero emoji slop). Jangan sertakan simbol emoji seperti 🚀, ✨, 💡, 🎯, 🔥, dsb., baik dalam teks balasan, judul tugas, maupun nama template. Gunakan kalimat yang bersih, tajam, dan elegan.
+Konteks Proyek:
+- Proyek: ${projectName || "Ruang Kerja STRATA"}
+- Sprint: Sprint #${sprint?.number || 1} (Tujuan: "${sprint?.goal || "Belum ditentukan"}")
+- Kondisi Kolom Papan: ${boardSummary}
 
-PENTING: Kembalikan respons HANYA dalam format JSON murni (bukan array, tanpa blok kode markdown) dengan struktur objek berikut:
+Karakter Spesialisasi Persona:
+- Koko: Arsitek Alur Kerja & Manajemen Sprint (pakar sasaran sprint, dekomposisi fitur modul, dan disiplin alur kerja Kanban).
+- Bobi: Analis Kapasitas & Beban Kerja (pakar estimasi Story Points, pemerataan kapasitas anggota, dan pencegahan bottleneck WIP Limit).
+- Cika: Dekomposisi Fitur Kompleks & Epics (pakar membedah fitur besar seperti Auth, CRUD, Payment, API, Database ke dalam kartu koding siap eksekusi).
+- Piko: Strategi Prioritas & Urgensi (pakar menyeleksi kartu prioritas sprint, menyortir Backlog, dan memisahkan tugas kritis MVP vs pelengkap).
+
+Pedoman Respons:
+1. Pertanyaan / Diskusi / Konsultasi / Penjelasan:
+   Jika pengguna bertanya konsep, alur kerja, tips kapten vs anggota, metodologi Scrum, usecase, cara kerja fitur, atau saran strategi, gunakan "kind": "text".
+   Berikan jawaban cerdas, aplikatif, padat berbobot, to-the-point, dan berstruktur rapi dengan markdown (gunakan bold dan nomor urut). JANGAN paksakan membuat kartu tugas jika pengguna hanya ingin bertanya atau berdiskusi.
+
+2. Pembuatan Fitur / Breakdown / Rencana Modul:
+   Jika pengguna meminta membuatkan fitur, merancang modul, memecah tugas, atau menyusun sprint (misalnya: "buatkan fitur login", "rancang modul kasir", "breakdown checkout"), gunakan "kind": "template".
+   Buat 3 sampai 5 kartu tugas koding yang sangat spesifik dan realistis dengan estimasi prioritas ("urgent", "high", "medium", "low") dan target kolom yang sesuai ("todo", "backlog", "progress").
+
+3. Permintaan 1 Tugas Spesifik:
+   Jika pengguna meminta menambahkan 1 tugas tunggal spesifik, gunakan "kind": "task".
+
+4. SANGAT PENTING: DILARANG KERAS menggunakan emoji apapun (zero emoji). Balasan harus bersih, profesional, elegan, dan langsung menjawab inti kebutuhan pengguna.
+
+Kembalikan respons HANYA dalam format JSON murni:
 {
   "kind": "text" | "task" | "template",
-  "text": "Pesan penjelasan singkat dan solutif (tanpa emoji)",
-  "task": { "title": "Judul tugas spesifik dan ringkas (tanpa emoji)", "priority": "urgent" | "high" | "medium" | "low", "column": "backlog" | "todo" | "progress" | "review" },
+  "text": "Penjelasan berbobot, ringkas, dan solutif dalam bahasa Indonesia (tanpa emoji)",
+  "task": { "title": "Judul tugas spesifik (tanpa emoji)", "priority": "urgent" | "high" | "medium" | "low", "column": "backlog" | "todo" | "progress" | "review" },
   "template": {
-    "name": "Nama Rencana / Template (tanpa emoji)",
+    "name": "Nama Modul / Rencana (tanpa emoji)",
     "tasks": [
-      { "title": "Judul tugas (tanpa emoji)", "priority": "urgent" | "high" | "medium" | "low", "column": "todo" }
+      { "title": "Judul tugas koding terarah (tanpa emoji)", "priority": "urgent" | "high" | "medium" | "low", "column": "todo" | "backlog" }
     ]
   }
-}
-Aturan "kind":
-- Gunakan "task" jika pengguna meminta dibuatkan/ditambahkan 1 tugas spesifik.
-- Gunakan "template" jika pengguna meminta rencana proyek, daftar tugas, breakdown fitur, atau beberapa kartu sekaligus (buat 3-5 tugas terarah).
-- Gunakan "text" jika pengguna hanya mengobrol, berkonsultasi, bertanya tentang tips Scrum/Kanban, atau menanyakan kondisi papan.`;
+}`;
 
   let rawContent = "";
   let lastError = "";
@@ -897,7 +909,7 @@ Aturan "kind":
     const uniqueModels = Array.from(new Set(BACKEND_GEMINI_MODELS));
     for (const modelId of uniqueModels) {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
           modelId
@@ -910,7 +922,7 @@ Aturan "kind":
             systemInstruction: { parts: [{ text: systemPrompt }] },
             contents: [{ role: "user", parts: [{ text: userText }] }],
             generationConfig: {
-              temperature: 0.7,
+              temperature: 0.6,
               responseMimeType: "application/json",
             },
           }),

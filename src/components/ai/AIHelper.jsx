@@ -160,8 +160,56 @@ function renderRichMessage(text, isLight) {
 
 const TEMPLATES = [
   {
+    match: ["login", "auth", "masuk", "daftar", "register", "autentikasi"],
+    name: "Modul Autentikasi Pengguna",
+    tasks: [
+      { title: "Desain UI Halaman Login & Registrasi Responsif", priority: "medium", column: "todo" },
+      { title: "Implementasi API Endpoint Auth JWT / Firebase Auth", priority: "urgent", column: "todo" },
+      { title: "Integrasi Form Login Frontend dengan Endpoint API", priority: "high", column: "todo" },
+      { title: "Pengujian Validasi Form, Keamanan Token, dan Error Handling", priority: "high", column: "todo" },
+    ],
+  },
+  {
+    match: ["keranjang", "checkout", "transaksi", "pembayaran", "order", "kasir"],
+    name: "Modul Keranjang & Transaksi",
+    tasks: [
+      { title: "Desain Skema Database & Tabel Model Transaksi", priority: "high", column: "todo" },
+      { title: "Implementasi REST API Item Keranjang & Perhitungan Total", priority: "urgent", column: "todo" },
+      { title: "Pengembangan Antarmuka UI Keranjang & Checkout", priority: "high", column: "todo" },
+      { title: "Integrasi Logika Kupon, Pajak, dan Pengujian Pembayaran", priority: "medium", column: "backlog" },
+    ],
+  },
+  {
+    match: ["crud", "produk", "barang", "data", "tabel", "manajemen"],
+    name: "Modul Manajemen Data (CRUD)",
+    tasks: [
+      { title: "Pembuatan Endpoint REST API CRUD Data", priority: "urgent", column: "todo" },
+      { title: "Desain Komponen Tabel Data, Filter, dan Pencarian", priority: "high", column: "todo" },
+      { title: "Implementasi Modal Dialog Tambah & Edit Data", priority: "medium", column: "todo" },
+      { title: "Validasi Form Input dan Notifikasi Toast Respon", priority: "low", column: "todo" },
+    ],
+  },
+  {
+    match: ["api", "backend", "database", "server", "skema"],
+    name: "Arsitektur Backend & Database",
+    tasks: [
+      { title: "Perancangan Diagram Relasi Entitas (ERD) & Skema Database", priority: "urgent", column: "todo" },
+      { title: "Setup Server Route & Middleware Autentikasi", priority: "high", column: "todo" },
+      { title: "Pembuatan API Documentation (Swagger / Postman Collection)", priority: "medium", column: "todo" },
+    ],
+  },
+  {
+    match: ["testing", "uji", "audit", "keamanan", "bug"],
+    name: "Pengujian Kualitas & Validasi",
+    tasks: [
+      { title: "Pelaksanaan Unit Testing Komponen Kritis", priority: "high", column: "todo" },
+      { title: "Audit Tampilan Responsif Lintas Perangkat", priority: "medium", column: "todo" },
+      { title: "Pemeriksaan Validasi Input dan Keamanan Endpoint", priority: "urgent", column: "todo" },
+    ],
+  },
+  {
     match: ["onboarding", "pengguna baru"],
-    name: "Onboarding pengguna",
+    name: "Onboarding Pengguna Baru",
     tasks: [
       { title: "Petakan alur pendaftaran pengguna baru", priority: "high", column: "todo" },
       { title: "Rancang email selamat datang", priority: "medium", column: "todo" },
@@ -170,18 +218,8 @@ const TEMPLATES = [
     ],
   },
   {
-    match: ["marketing", "kampanye", "sosial media", "promosi"],
-    name: "Kampanye pemasaran",
-    tasks: [
-      { title: "Susun kalender konten 2 minggu", priority: "high", column: "todo" },
-      { title: "Desain aset visual kampanye", priority: "medium", column: "todo" },
-      { title: "Jadwalkan publikasi ke media sosial", priority: "medium", column: "todo" },
-      { title: "Rangkum laporan performa kampanye", priority: "low", column: "todo" },
-    ],
-  },
-  {
     match: ["rilis", "launch", "peluncuran"],
-    name: "Peluncuran produk",
+    name: "Peluncuran Produk",
     tasks: [
       { title: "Finalisasi daftar fitur yang dirilis", priority: "urgent", column: "todo" },
       { title: "Siapkan halaman changelog publik", priority: "medium", column: "todo" },
@@ -192,11 +230,11 @@ const TEMPLATES = [
 ];
 
 const DEFAULT_TEMPLATE = {
-  name: "Kickoff proyek baru",
+  name: "Kickoff Modul Koding Baru",
   tasks: [
-    { title: "Tentukan tujuan dan ruang lingkup proyek", priority: "urgent", column: "todo" },
-    { title: "Susun linimasa dan milestone utama", priority: "high", column: "todo" },
-    { title: "Bagikan rencana ke seluruh anggota tim", priority: "medium", column: "todo" },
+    { title: "Tentukan spesifikasi teknis dan ruang lingkup modul", priority: "urgent", column: "todo" },
+    { title: "Implementasi komponen UI dan integrasi endpoint data", priority: "high", column: "todo" },
+    { title: "Uji kelayakan alur fungsi dan penanganan galat", priority: "medium", column: "todo" },
   ],
 };
 
@@ -232,19 +270,61 @@ function cleanTitle(text) {
 }
 
 function wantsTemplate(text) {
-  return /template|rencana|kickoff|susunkan|rancangkan|daftar tugas|pecahkan/i.test(text);
+  return /template|rencana|kickoff|susunkan|rancangkan|daftar tugas|pecahkan|fitur|modul|sprint/i.test(text);
 }
 
 function buildLocalAssistantReply(userText, persona) {
-  if (wantsTemplate(userText)) {
+  const lower = userText.toLowerCase().trim();
+
+  // 1. Cek apakah pengguna mengajukan pertanyaan, diskusi, atau konsultasi
+  const isQuestion =
+    /^(apa|bagaimana|gimana|kenapa|mengapa|siapa|jelaskan|tahu|tolong jelaskan|bisa jelaskan|\?)/i.test(lower) ||
+    lower.includes("cara") ||
+    lower.includes("peran") ||
+    lower.includes("tugas kapten") ||
+    lower.includes("tugas anggota") ||
+    lower.includes("alur") ||
+    lower.includes("scrum") ||
+    lower.includes("kanban");
+
+  if (isQuestion) {
+    if (lower.includes("kapten") || lower.includes("bagi tugas") || lower.includes("pembagian")) {
+      return {
+        role: "assistant",
+        kind: "text",
+        text: `Berikut rekomendasi dari **${persona.name}** untuk pembagian tugas tim yang optimal:\n\n**1. Pecah Fitur Menjadi Tugas Koding Terukur**\nPastikan modul besar dipecah menjadi kartu tugas koding spesifik (misal: API, Desain UI, Database).\n\n**2. Selaraskan dengan Keahlian Anggota**\nBagi tugas berdasarkan fokus anggota (Frontend, Backend, Desain, atau QA) serta kapasitas jam kerja mingguan.\n\n**3. Terapkan Pull System & WIP Limit**\nDorong anggota mengambil sendiri tugas di kolom Todo dan batasi maksimal 1-2 tugas berjalan bersamaan agar fokus terjaga.`,
+      };
+    }
+    if (lower.includes("alur") || lower.includes("fase") || lower.includes("tahap")) {
+      return {
+        role: "assistant",
+        kind: "text",
+        text: `Alur kerja pengembangan di STRATA mengikuti siklus 4 fase terstruktur:\n\n**01. Perencanaan & AI**: Menyusun sasaran sprint, breakdown fitur menjadi kartu tugas, dan mengunci prioritas.\n**02. Eksekusi Sprint**: Anggota menarik kartu ke kolom Sedang Berjalan, menyalakan stopwatch pencatat jam koding, dan mengoding fokus.\n**03. Review & Pengujian**: Memeriksa checklist pengujian bebas galat sebelum disetujui kapten.\n**04. Selesai & Rilis**: Penutupan kartu, evaluasi grafik Burndown, dan pencatatan velocity tim.`,
+      };
+    }
+    return {
+      role: "assistant",
+      kind: "text",
+      text: `Saya **${persona.name}** siap membantu mengarahkan alur kerja sprint tim kamu. Kamu bisa meminta saya menyusun rencana tugas koding (misalnya: *"buatkan fitur login"*), merancang sasaran sprint, atau berkonsultasi seputar pembagian beban kerja tim.`,
+    };
+  }
+
+  // 2. Cek apakah pengguna meminta template atau breakdown tugas
+  const isTemplateRequest =
+    wantsTemplate(userText) ||
+    /buatkan|rancang|susun|breakdown|fitur|modul|sprint/i.test(lower);
+
+  if (isTemplateRequest) {
     const template = detectTemplate(userText);
     return {
       role: "assistant",
       kind: "template",
-      text: `Berikut rekomendasi struktur kartu untuk **"${template.name}"** yang telah disusun oleh **${persona.name}**. Silakan tinjau dan klik tombol terapkan untuk menambahkannya ke papan Kanban.`,
+      text: `Berikut rekomendasi struktur kartu tugas untuk **"${template.name}"** yang telah disiapkan oleh **${persona.name}**. Tinjau kartu di bawah ini dan klik tombol terapkan untuk langsung memasukkannya ke papan Kanban.`,
       template,
     };
   }
+
+  // 3. Permintaan 1 tugas spesifik
   const priority = detectPriority(userText);
   const title = cleanTitle(userText);
   return {
@@ -380,9 +460,10 @@ function TaskProposalCard({ task, onApply, applied, theme = "dark" }) {
 }
 
 const SUGGESTIONS = [
-  "Buatkan template rencana peluncuran produk baru",
-  "Tambahkan tugas mendesak: optimalkan alur checkout pembayaran",
-  "Susunkan rencana strategi konten dan pemasaran 2 minggu",
+  "Pecah fitur autentikasi login & registrasi",
+  "Bagaimana cara kapten membagi tugas di sprint?",
+  "Buatkan 4 tugas modul keranjang & checkout",
+  "Susunkan kartu pengujian keamanan & validasi API",
 ];
 
 export default function AIHelper({
@@ -826,7 +907,7 @@ export default function AIHelper({
                           </div>
                           <div
                             className={
-                              "rounded-2xl rounded-tl-md px-4 py-3 text-[13px] leading-[1.6] max-w-[295px] border whitespace-pre-line " +
+                              "rounded-2xl rounded-tl-md px-4 py-3 text-[13px] leading-[1.6] max-w-[320px] sm:max-w-[420px] border whitespace-pre-line " +
                               (isLight
                                 ? "bg-white border-slate-200/80 text-zinc-700 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.06),inset_0_1px_0_rgba(255,255,255,1)]"
                                 : "bg-zinc-800/75 border-zinc-700/60 text-zinc-200 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.07)]")
