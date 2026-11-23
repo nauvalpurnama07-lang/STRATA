@@ -24,6 +24,7 @@ import {
   checklistPct,
 } from "../data/board";
 import SprintBar from "../components/scrum/SprintBar";
+import WorkflowGuide from "../components/scrum/WorkflowGuide";
 import ViewerBoard from "../components/scrum/ViewerBoard";
 import WhiteboardCanvas from "../components/presentation/WhiteboardCanvas";
 import AIHelper from "../components/ai/AIHelper";
@@ -7802,6 +7803,21 @@ export default function DashboardPage({ user, onLogout }) {
                     onStartSprint={startSprint}
                     onEndSprint={endSprint}
                     onOpenSettings={() => setView("settings")}
+                  />
+
+                  <WorkflowGuide
+                    board={board}
+                    sprint={sprint}
+                    role={role}
+                    lockPriority={lockPriority}
+                    theme={theme}
+                    onOpenAIHelper={() => {
+                      window.dispatchEvent(new CustomEvent("strata:open-ai"));
+                    }}
+                    onScrollToColumn={(colId) => {
+                      const el = document.querySelector(`[data-colid="${colId}"]`) || document.getElementById("column-" + colId);
+                      if (el) el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+                    }}
                   />
 
                   <div className="flex flex-wrap items-center justify-between gap-3.5 mb-5">

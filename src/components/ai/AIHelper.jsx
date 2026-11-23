@@ -417,6 +417,14 @@ export default function AIHelper({
   const hasUserMessages = messages.some((m) => m.role === "user");
 
   useEffect(() => {
+    function handleCustomOpen() {
+      setOpen(true);
+    }
+    window.addEventListener("strata:open-ai", handleCustomOpen);
+    return () => window.removeEventListener("strata:open-ai", handleCustomOpen);
+  }, []);
+
+  useEffect(() => {
     if (listRef.current) {
       listRef.current.scrollTo({
         top: listRef.current.scrollHeight,
