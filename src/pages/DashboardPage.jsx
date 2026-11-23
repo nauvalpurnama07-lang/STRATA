@@ -24,6 +24,7 @@ import {
   checklistPct,
 } from "../data/board";
 import SprintBar from "../components/scrum/SprintBar";
+import WorkflowGuide from "../components/scrum/WorkflowGuide";
 import ViewerBoard from "../components/scrum/ViewerBoard";
 import WhiteboardCanvas from "../components/presentation/WhiteboardCanvas";
 import AIHelper from "../components/ai/AIHelper";
@@ -626,7 +627,7 @@ function TaskCardBody({ task, theme = "dark", colId, onDelete }) {
         </div>
       )}
 
-      <div className={"text-[13.5px] font-semibold leading-snug " + (isLight ? "text-zinc-900" : "text-zinc-50")}>
+      <div className={"text-[13.5px] font-semibold leading-snug tracking-tight transition-colors group-hover:text-emerald-400 " + (isLight ? "text-zinc-900" : "text-zinc-100")}>
         {task.title}
       </div>
 
@@ -818,27 +819,27 @@ function TaskCard({
     >
       {/* INDIKATOR STATUS DOT DI LUAR SISI KIRI KARTU */}
       <div
-        className="absolute -left-3 top-3.5 flex items-center justify-center pointer-events-none z-20"
-        title={`Status: ${PRIORITY_LABEL[task.priority] || "Normal"}${!isSeen ? " • Belum dibuka" : ""}`}
+        className="absolute -left-4 top-4 flex items-center justify-center pointer-events-none z-20"
+        title={`Prioritas: ${PRIORITY_LABEL[task.priority] || "Normal"}${!isSeen ? " • Belum dibuka" : ""}`}
       >
-        <span className="relative flex h-2.5 w-2.5 items-center justify-center">
+        <span className="relative flex h-3 w-3 items-center justify-center">
           {task.priority === "urgent" && (
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-80" />
           )}
-          {!isSeen && task.priority !== "urgent" && (
+          {!isSeen && (
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70" />
           )}
           <span
             className={
-              "relative inline-flex rounded-full h-2 w-2 ring-2 shadow-md transition-transform duration-200 group-hover:scale-125 " +
+              "relative inline-flex rounded-full h-2.5 w-2.5 ring-2 shadow-md transition-all duration-300 group-hover:scale-125 " +
               (isLight ? "ring-white " : "ring-zinc-950 ") +
               (task.priority === "urgent"
-                ? "bg-rose-500 shadow-[0_0_8px_#f43f5e]"
+                ? "bg-rose-500 shadow-[0_0_12px_#f43f5e]"
                 : task.priority === "high"
-                ? "bg-amber-400 shadow-[0_0_8px_#f59e0b]"
+                ? "bg-amber-400 shadow-[0_0_10px_#f59e0b]"
                 : task.priority === "medium"
-                ? "bg-sky-400 shadow-[0_0_8px_#38bdf8]"
-                : "bg-emerald-500 shadow-[0_0_6px_#10b981]")
+                ? "bg-sky-400 shadow-[0_0_10px_#38bdf8]"
+                : "bg-emerald-500 shadow-[0_0_8px_#10b981]")
             }
           />
         </span>
@@ -1491,7 +1492,7 @@ function KanbanColumn({
 
       <div
         data-colid={col.id}
-        className={"rounded-2xl p-2.5 flex-1 flex flex-col gap-2.5 min-h-[140px] transition-colors border " + (isOver ? colTheme.dropOver : colTheme.colBg)}
+        className={"rounded-2xl py-2.5 pl-6 pr-2.5 flex-1 flex flex-col gap-2.5 min-h-[140px] transition-colors border " + (isOver ? colTheme.dropOver : colTheme.colBg)}
       >
         {visibleTasks.map((t) => {
           const locked = !isPersonalBoard && isMember && !t.prioritized;
@@ -7964,6 +7965,22 @@ export default function DashboardPage({ user, onLogout }) {
                     onStartSprint={startSprint}
                     onEndSprint={endSprint}
                     onOpenSettings={() => setView("settings")}
+                  />
+
+                  {/* ALUR KERJA SPRINT (WORKFLOW GUIDE ALA JIRA & CLICKUP) */}
+                  <WorkflowGuide
+                    board={board}
+                    sprint={sprint}
+                    role={role}
+                    lockPriority={lockPriority}
+                    theme={theme}
+                    onOpenAIHelper={() => {
+                      window.dispatchEvent(new CustomEvent("strata:open-ai"));
+                    }}
+                    onScrollToColumn={(colId) => {
+                      const el = document.querySelector(`[data-colid="${colId}"]`) || document.getElementById("column-" + colId);
+                      if (el) el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+                    }}
                   />
 
                   <div className="flex flex-wrap items-center justify-between gap-3.5 mb-5">
