@@ -817,73 +817,76 @@ function TaskCard({
           : "inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.35), 0 12px 28px -6px rgba(0,0,0,0.55)",
       }}
     >
-      {/* INDIKATOR STATUS DOT DI LUAR SISI KIRI KARTU */}
+      {/* INDIKATOR STATUS BEZEL DI PINGGIR SISI KIRI KARTU */}
       <div
-        className="absolute -left-4 top-4 flex items-center justify-center pointer-events-none z-20"
+        className="absolute -left-2 top-4 flex items-center justify-center pointer-events-none z-20"
         title={`Prioritas: ${PRIORITY_LABEL[task.priority] || "Normal"}${!isSeen ? " • Belum dibuka" : ""}`}
       >
-        <span className="relative flex h-3 w-3 items-center justify-center">
+        <div
+          className={
+            "w-4 h-4 rounded-full flex items-center justify-center border shadow-md transition-all duration-300 group-hover:scale-125 " +
+            (isLight ? "bg-white border-slate-300 ring-2 ring-slate-100" : "bg-zinc-950 border-zinc-700/80 ring-2 ring-zinc-900")
+          }
+        >
           {task.priority === "urgent" && (
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-80" />
+            <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full bg-rose-400 opacity-80" />
           )}
           {!isSeen && (
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70" />
+            <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 opacity-70" />
           )}
           <span
             className={
-              "relative inline-flex rounded-full h-2.5 w-2.5 ring-2 shadow-md transition-all duration-300 group-hover:scale-125 " +
-              (isLight ? "ring-white " : "ring-zinc-950 ") +
+              "relative inline-flex rounded-full h-2 w-2 " +
               (task.priority === "urgent"
-                ? "bg-rose-500 shadow-[0_0_12px_#f43f5e]"
+                ? "bg-rose-500 shadow-[0_0_8px_#f43f5e]"
                 : task.priority === "high"
-                ? "bg-amber-400 shadow-[0_0_10px_#f59e0b]"
+                ? "bg-amber-400 shadow-[0_0_6px_#f59e0b]"
                 : task.priority === "medium"
-                ? "bg-sky-400 shadow-[0_0_10px_#38bdf8]"
-                : "bg-emerald-500 shadow-[0_0_8px_#10b981]")
+                ? "bg-sky-400 shadow-[0_0_6px_#38bdf8]"
+                : "bg-emerald-500 shadow-[0_0_6px_#10b981]")
             }
           />
-        </span>
+        </div>
       </div>
 
-      {/* POP-UP INTERAKTIF SAAT HOVER KHUSUS KARTU MENDESAK / KOMENTAR YANG BELUM DILIHAT */}
+      {/* POP-UP INTERAKTIF ELEGAN SAAT HOVER KHUSUS KARTU MENDESAK / KOMENTAR YANG BELUM DILIHAT */}
       {(isUrgent || hasComments) && !isSeen && isHovered && (
         <div
           data-no-drag
           onClick={markAsSeen}
           className={
-            "absolute -top-11 left-1.5 right-1.5 z-40 px-3 py-1.5 rounded-xl border flex items-center justify-between gap-2 shadow-2xl backdrop-blur-2xl transition-all duration-200 cursor-pointer " +
+            "absolute -top-8.5 left-2 z-50 px-3 py-1 rounded-full border flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all duration-200 cursor-pointer animate-in fade-in zoom-in-95 " +
             (isUrgent
               ? isLight
-                ? "bg-rose-50/95 border-rose-300 text-rose-950 shadow-rose-500/20"
-                : "bg-zinc-950/95 border-rose-500/60 text-rose-200 shadow-rose-950/60"
+                ? "bg-white/95 border-rose-300 text-rose-950 shadow-rose-500/10"
+                : "bg-zinc-950/95 border-rose-500/50 text-rose-200 shadow-rose-950/60"
               : isLight
-              ? "bg-sky-50/95 border-sky-300 text-sky-950 shadow-sky-500/20"
-              : "bg-zinc-950/95 border-sky-500/60 text-sky-200 shadow-sky-950/60")
+              ? "bg-white/95 border-sky-300 text-sky-950 shadow-sky-500/10"
+              : "bg-zinc-950/95 border-sky-500/50 text-sky-200 shadow-sky-950/60")
           }
+          title="Klik untuk tandai sudah dibaca"
         >
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="relative flex h-2 w-2 flex-shrink-0">
-              <span
-                className={
-                  "animate-ping absolute inline-flex h-full w-full rounded-full opacity-80 " +
-                  (isUrgent ? "bg-rose-400" : "bg-sky-400")
-                }
-              />
-              <span
-                className={
-                  "relative inline-flex rounded-full h-2 w-2 " +
-                  (isUrgent ? "bg-rose-500 shadow-[0_0_8px_#f43f5e]" : "bg-sky-500 shadow-[0_0_8px_#38bdf8]")
-                }
-              />
+          <span className="relative flex h-2 w-2 flex-shrink-0">
+            <span
+              className={
+                "animate-ping absolute inline-flex h-full w-full rounded-full opacity-80 " +
+                (isUrgent ? "bg-rose-400" : "bg-sky-400")
+              }
+            />
+            <span
+              className={
+                "relative inline-flex rounded-full h-2 w-2 " +
+                (isUrgent ? "bg-rose-500 shadow-[0_0_8px_#f43f5e]" : "bg-sky-400 shadow-[0_0_8px_#38bdf8]")
+              }
+            />
+          </span>
+          <div className="flex items-center gap-1.5 min-w-0 pr-0.5">
+            <span className="text-[10.5px] font-bold truncate tracking-tight">
+              {isUrgent ? "Tugas Mendesak" : `${commentsList.length} Komentar Baru`}
             </span>
-            <div className="min-w-0">
-              <div className="text-[11.5px] font-extrabold truncate leading-tight">
-                {isUrgent ? "Perhatian: Tugas Mendesak!" : `${commentsList.length} Komentar Diskusi Baru`}
-              </div>
-              <div className={"text-[10px] font-medium truncate leading-tight mt-0.5 " + (isLight ? "text-zinc-600" : "text-zinc-400")}>
-                Klik kartu untuk tandai sudah dilihat
-              </div>
-            </div>
+            <span className={"text-[9.5px] font-normal truncate " + (isLight ? "text-zinc-500" : "text-zinc-400")}>
+              • Tandai sudah dilihat
+            </span>
           </div>
           <button
             type="button"
@@ -892,14 +895,15 @@ function TaskCard({
               e.stopPropagation();
               markAsSeen();
             }}
+            aria-label="Tutup notifikasi"
             className={
-              "px-2 py-0.5 rounded-md text-[9.5px] font-mono font-bold uppercase tracking-wider border flex-shrink-0 transition-colors " +
+              "w-4 h-4 rounded-full flex items-center justify-center transition-all cursor-pointer " +
               (isLight
-                ? "bg-zinc-100 hover:bg-zinc-200 border-zinc-300 text-zinc-800"
-                : "bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-200")
+                ? "text-zinc-400 hover:text-zinc-800 hover:bg-slate-100"
+                : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800")
             }
           >
-            Tutup
+            <Icon.X width={10} height={10} />
           </button>
         </div>
       )}
@@ -1492,7 +1496,7 @@ function KanbanColumn({
 
       <div
         data-colid={col.id}
-        className={"rounded-2xl py-2.5 pl-6 pr-2.5 flex-1 flex flex-col gap-2.5 min-h-[140px] transition-colors border " + (isOver ? colTheme.dropOver : colTheme.colBg)}
+        className={"rounded-2xl p-2.5 flex-1 flex flex-col gap-2.5 min-h-[140px] transition-colors border " + (isOver ? colTheme.dropOver : colTheme.colBg)}
       >
         {visibleTasks.map((t) => {
           const locked = !isPersonalBoard && isMember && !t.prioritized;
